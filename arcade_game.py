@@ -10,7 +10,7 @@ WIDTH, HEIGHT = 800, 600
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
-GUN_COLOR = (0, 0, 255)
+NEON_BLUE = (0, 255, 255)  # Neon blue for both the rectangle and square
 METEOR_COLOR = (128, 128, 128)
 FPS = 60
 
@@ -26,7 +26,12 @@ meteors = []
 score = 0
 
 def draw_gun():
-    pygame.draw.rect(screen, GUN_COLOR, pygame.Rect(gun_pos[0], gun_pos[1], 50, 10))
+    # Gun rectangle (body) with increased height
+    pygame.draw.rect(screen, NEON_BLUE, pygame.Rect(gun_pos[0], gun_pos[1] + 20, 60, 20))
+
+    # Gun square (top) with the same color
+    pygame.draw.rect(screen, NEON_BLUE, pygame.Rect(gun_pos[0] + 20, gun_pos[1], 20, 20))
+
 
 def draw_bullets():
     for bullet in bullets:

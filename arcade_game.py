@@ -16,8 +16,8 @@ FPS = 60
 MAX_MISSED_METEORS = 10
 
 # Load retro font
-font = pygame.font.Font('fonts/PressStart2P-Regular.ttf', 36)
-font_large = pygame.font.Font('fonts/PressStart2P-Regular.ttf', 72)
+font = pygame.font.Font('fonts/PressStart2P-Regular.ttf', 16)
+font_large = pygame.font.Font('fonts/PressStart2P-Regular.ttf', 48)  # Adjusted size
 
 # Initialize the screen
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -54,15 +54,16 @@ def draw_game_over():
     restart_text = font.render("Press R to Restart or Q to Quit", True, WHITE)
     
     # Draw the "GAME OVER" text with a retro outline
+    outline_color = BLACK
     outline_width = 2
     
     # Outline effect
     for dx in [-outline_width, 0, outline_width]:
         for dy in [-outline_width, 0, outline_width]:
             if dx != 0 or dy != 0:
-                screen.blit(game_over_text, (WIDTH // 4 + dx, HEIGHT // 2 - 50 + dy))
+                screen.blit(game_over_text, (WIDTH // 2 - game_over_text.get_width() // 2 + dx, HEIGHT // 2 - 100 + dy))
     
-    screen.blit(game_over_text, (WIDTH // 4, HEIGHT // 2 - 50))
+    screen.blit(game_over_text, (WIDTH // 2 - game_over_text.get_width() // 2, HEIGHT // 2 - 100))
     
     # Draw restart text
     restart_rect = restart_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 50))

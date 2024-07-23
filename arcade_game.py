@@ -13,22 +13,26 @@ RED = (255, 0, 0)
 NEON_BLUE = (0, 255, 255)  # Neon blue for both the rectangle and square
 METEOR_COLORS = [(128, 128, 128), (169, 169, 169), (192, 192, 192)]  # Different shades of gray
 FPS = 60
+MAX_MISSED_METEORS = 10
 
-# Initialize the screen and font
+# Load retro font
+font = pygame.font.Font('fonts/PressStart2P-Regular.ttf', 36)
+font_large = pygame.font.Font('fonts/PressStart2P-Regular.ttf', 72)
+
+# Initialize the screen
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Meteor Shooter")
-font = pygame.font.Font(None, 36)
 
 # Game Variables
 gun_pos = [WIDTH // 2, HEIGHT - 50]
 bullets = []
 meteors = []
 score = 0
+missed_meteors = 0
 
 def draw_gun():
     # Gun rectangle (body) with increased height
     pygame.draw.rect(screen, NEON_BLUE, pygame.Rect(gun_pos[0], gun_pos[1] + 20, 60, 20))
-
     # Gun square (top) with the same color
     pygame.draw.rect(screen, NEON_BLUE, pygame.Rect(gun_pos[0] + 20, gun_pos[1], 20, 20))
 
@@ -42,7 +46,27 @@ def draw_meteors():
 
 def draw_score():
     score_text = font.render(f"Score: {score}", True, WHITE)
-    screen.blit(score_text, (10, 10))
+    text_rect = score_text.get_rect(center=(WIDTH // 2, 50))
+    screen.blit(score_text, text_rect)
+
+def draw_game_over():
+    game_over_text = font_large.render("GAME OVER", True, WHITE)
+    restart_text = font.render("Press R to Restart or Q to Quit", True, WHITE)
+    
+    # Draw the "GAME OVER" text with a retro outline
+    outline_width = 2
+    
+    # Outline effect
+    for dx in [-outline_width, 0, outline_width]:
+        for dy in [-outline_width, 0, outline_width]:
+            if dx != 0 or dy != 0:
+                screen.blit(game_over_text, (WIDTH // 4 + dx, HEIGHT // 2 - 50 + dy))
+    
+    screen.blit(game_over_text, (WIDTH // 4, HEIGHT // 2 - 50))
+    
+    # Draw restart text
+    restart_rect = restart_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 50))
+    screen.blit(restart_text, restart_rect)
 
 def handle_bullets():
     global score
@@ -61,14 +85,25 @@ def handle_bullets():
                     break
 
 def handle_meteors():
+    global missed_meteors
     for meteor in meteors:
         meteor['y'] += 5
         if meteor['y'] > HEIGHT:
             meteors.remove(meteor)
+            missed_meteors += 1
+
+def reset_game():
+    global gun_pos, bullets, meteors, score, missed_meteors
+    gun_pos = [WIDTH // 2, HEIGHT - 50]
+    bullets = []
+    meteors = []
+    score = 0
+    missed_meteors = 0
 
 def main():
     global gun_pos
     clock = pygame.time.Clock()
+    game_over = False
     
     while True:
         for event in pygame.event.get():
@@ -77,34 +112,51 @@ def main():
                 sys.exit()
 
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT] and gun_pos[0] > 0:
-            gun_pos[0] -= 5
-        if keys[pygame.K_RIGHT] and gun_pos[0] < WIDTH - 60:
-            gun_pos[0] += 5
-        if keys[pygame.K_SPACE]:
-            bullets.append([gun_pos[0] + 22, gun_pos[1]])
+        if game_over:
+            if keys[pygame.K_r]:
+                reset_game()
+                game_over = False
+            if keys[pygame.K_q]:
+                pygame.quit()
+                sys.exit()
+        else:
+            if keys[pygame.K_LEFT] and gun_pos[0] > 0:
+                gun_pos[0] -= 5
+            if keys[pygame.K_RIGHT] and gun_pos[0] < WIDTH - 60:
+                gun_pos[0] += 5
+            if keys[pygame.K_SPACE]:
+                bullets.append([gun_pos[0] + 22, gun_pos[1]])
 
-        screen.fill(BLACK)
-        draw_gun()
-        draw_bullets()
-        draw_meteors()
-        draw_score()
-        handle_bullets()
-        handle_meteors()
-        
-        if random.random() < 0.02:
-            size = random.randint(20, 50)  # Random size between 20 and 50
-            points = size // 10  # Points based on size
-            meteors.append({
-                'x': random.randint(0, WIDTH - size),
-                'y': 0,
-                'size': size,
-                'color': random.choice(METEOR_COLORS),
-                'points': points
-            })
-        
-        pygame.display.flip()
-        clock.tick(FPS)
+            screen.fill(BLACK)
+            draw_gun()
+            draw_bullets()
+            draw_meteors()
+            draw_score()
+            handle_bullets()
+            handle_meteors()
+
+            if random.random() < 0.02:
+                size = random.randint(20, 50)  # Random size between 20 and 50
+                points = size // 10  # Points based on size
+                meteors.append({
+                    'x': random.randint(0, WIDTH - size),
+                    'y': 0,
+                    'size': size,
+                    'color': random.choice(METEOR_COLORS),
+                    'points': points
+                })
+            
+            if missed_meteors >= MAX_MISSED_METEORS:
+                game_over = True
+
+            pygame.display.flip()
+            clock.tick(FPS)
+
+        if game_over:
+            screen.fill(BLACK)
+            draw_game_over()
+            pygame.display.flip()
 
 if __name__ == "__main__":
+    reset_game()
     main()

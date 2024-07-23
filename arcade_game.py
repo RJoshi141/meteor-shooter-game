@@ -10,6 +10,7 @@ WIDTH, HEIGHT = 800, 600
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
+YELLOW = (255, 255, 0)  # Yellow color for the score number
 NEON_BLUE = (0, 255, 255)  # Neon blue for both the rectangle and square
 METEOR_COLORS = [(128, 128, 128), (169, 169, 169), (192, 192, 192)]  # Different shades of gray
 FPS = 60
@@ -45,9 +46,17 @@ def draw_meteors():
         pygame.draw.ellipse(screen, meteor['color'], pygame.Rect(meteor['x'], meteor['y'], meteor['size'], meteor['size']))
 
 def draw_score():
-    score_text = font.render(f"Score: {score}", True, WHITE)
-    text_rect = score_text.get_rect(center=(WIDTH // 2, 50))
-    screen.blit(score_text, text_rect)
+    # Render score text parts
+    score_label = font.render("Score: ", True, WHITE)
+    score_value = font.render(str(score), True, YELLOW)
+    
+    # Positioning the texts
+    label_rect = score_label.get_rect(midright=(WIDTH // 2 - 10, 50))
+    value_rect = score_value.get_rect(midleft=(WIDTH // 2 + 10, 50))
+    
+    # Draw texts on the screen
+    screen.blit(score_label, label_rect)
+    screen.blit(score_value, value_rect)
 
 def draw_game_over():
     game_over_text = font_large.render("GAME OVER", True, WHITE)

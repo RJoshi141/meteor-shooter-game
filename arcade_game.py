@@ -11,7 +11,7 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 NEON_BLUE = (0, 255, 255)  # Neon blue for both the rectangle and square
-METEOR_COLOR = (128, 128, 128)
+METEOR_COLORS = [(128, 128, 128), (169, 169, 169), (192, 192, 192)]  # Different shades of gray
 FPS = 60
 
 # Initialize the screen and font
@@ -32,14 +32,13 @@ def draw_gun():
     # Gun square (top) with the same color
     pygame.draw.rect(screen, NEON_BLUE, pygame.Rect(gun_pos[0] + 20, gun_pos[1], 20, 20))
 
-
 def draw_bullets():
     for bullet in bullets:
         pygame.draw.rect(screen, RED, pygame.Rect(bullet[0], bullet[1], 5, 10))
 
 def draw_meteors():
     for meteor in meteors:
-        pygame.draw.ellipse(screen, METEOR_COLOR, pygame.Rect(meteor[0], meteor[1], 30, 30))
+        pygame.draw.ellipse(screen, meteor['color'], pygame.Rect(meteor['x'], meteor['y'], meteor['size'], meteor['size']))
 
 def draw_score():
     score_text = font.render(f"Score: {score}", True, WHITE)
@@ -53,16 +52,18 @@ def handle_bullets():
             bullets.remove(bullet)
         else:
             for meteor in meteors:
-                if pygame.Rect(bullet[0], bullet[1], 5, 10).colliderect(pygame.Rect(meteor[0], meteor[1], 30, 30)):
+                meteor_rect = pygame.Rect(meteor['x'], meteor['y'], meteor['size'], meteor['size'])
+                bullet_rect = pygame.Rect(bullet[0], bullet[1], 5, 10)
+                if bullet_rect.colliderect(meteor_rect):
                     meteors.remove(meteor)
                     bullets.remove(bullet)
-                    score += 10
+                    score += meteor['points']
                     break
 
 def handle_meteors():
     for meteor in meteors:
-        meteor[1] += 5
-        if meteor[1] > HEIGHT:
+        meteor['y'] += 5
+        if meteor['y'] > HEIGHT:
             meteors.remove(meteor)
 
 def main():
@@ -78,7 +79,7 @@ def main():
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT] and gun_pos[0] > 0:
             gun_pos[0] -= 5
-        if keys[pygame.K_RIGHT] and gun_pos[0] < WIDTH - 50:
+        if keys[pygame.K_RIGHT] and gun_pos[0] < WIDTH - 60:
             gun_pos[0] += 5
         if keys[pygame.K_SPACE]:
             bullets.append([gun_pos[0] + 22, gun_pos[1]])
@@ -92,7 +93,15 @@ def main():
         handle_meteors()
         
         if random.random() < 0.02:
-            meteors.append([random.randint(0, WIDTH - 30), 0])
+            size = random.randint(20, 50)  # Random size between 20 and 50
+            points = size // 10  # Points based on size
+            meteors.append({
+                'x': random.randint(0, WIDTH - size),
+                'y': 0,
+                'size': size,
+                'color': random.choice(METEOR_COLORS),
+                'points': points
+            })
         
         pygame.display.flip()
         clock.tick(FPS)
